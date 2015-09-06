@@ -13,13 +13,14 @@ import csv, sqlite3
 
 # Create connection to db
 conn = sqlite3.connect(":memory:")
+conn.text_factory = str # to fix the bug with quotes in movies title
 # conn = sqlite3.connect('data/ratings.db') # if not wanting to load to memory
 curs = conn.cursor()
 
 
-def create_db(table_dic, conn, curs):
+def create_db(table_dic, tablename, conn, curs):
     # Define table name
-    t = table_dic.keys()[0]
+    t = tablename
 
     # Define path and open file
     path = 'data/ml-1m/' + t + '.dat'
@@ -30,53 +31,45 @@ def create_db(table_dic, conn, curs):
     # Create SQL table with right no. of cols
     s1 = ''
     s2 = ''
-    for i in table_dic[t].keys():
-        s1+= i+', '
+    for i in table_dic.keys():
+        s1 += i + ', '
         s2 += '?, '
     s1 = s1.strip(', ')
     s2 = s2.strip(', ')
 
-    print "CREATE TABLE " + t + " (" + s1 + ");"
+    print "INFO: CREATE TABLE " + t + " (" + s1 + ");"
     curs.execute("CREATE TABLE " + t + " (" + s1 + ");")
 
     for i in lines:
-        to_db = i.replace('/n','').split("::")
-        to_db = list(to_db[j] for j in table_dic[t].values())
-        #print "INSERT INTO " + t + " (" + s1 + ") VALUES (" + s2 + ");"
-        #print to_db
+        to_db = i.replace('/n', '').split("::")
+        to_db = list(to_db[j] for j in table_dic.values())
+        # print "INSERT INTO " + t + " (" + s1 + ") VALUES (" + s2 + ");"
+        # print to_db
         curs.execute("INSERT INTO " + t + " (" + s1 + ") VALUES (" + s2 + ");", to_db)
+    print 'INFO: Finished creating table ' + t
     conn.commit()
 
-f = open('data/ml-1m/ratings.dat', "r")
-lines = f.readlines()
-f.close
-for i in lines:
-    values = i.split("::")
 
-tables_dic = {'ratings': {'UserID': 1, 'MovieID': 2, 'Rating': 3, 'Timestap': 4},
+############ Start of main()
+
+
+dic_all = {'ratings': {'UserID': 1, 'MovieID': 2, 'Rating': 3, 'Timestap': 4},
               'users': {'UserID': 1, 'Gender': 2, 'Age': 3, 'Occupation': 4, 'ZipCode': 5},
               'movies': {'MovieID': 1, 'Title': 2, 'Genres': 3}
               }
 
-dic1 = {'ratings': {'Timestamp': 3, 'MovieID': 1}}
-create_db(dic1, conn, curs)
-for row in curs.execute("SELECT * FROM ratings  LIMIT 5;"):
-    print row
-print 'INFO:: finished printing 5 rows'
+dic_sel = {'ratings': {'UserID': 1, 'MovieID': 2, 'Rating': 3},
+           'users': {'UserID': 1, 'Gender': 2, 'Age': 3},
+           'movies': {'MovieID': 1, 'Title': 2}
+           }
 
+for key, dic in dic_sel.iteritems():
+    print key, dic
+    create_db(dic, key, conn, curs)
 
-# for i in tables_dic:
-#     create_db(i, tables_dic[i], conn, curs)
-# create_db('movies', 'MovieID, Title, Genres', conn, curs)
-# print 'INFO:: finished creating database for'+i
-# for row in curs.execute("SELECT * FROM "+i+"  LIMIT 5;"):
+# for row in curs.execute("SELECT * FROM ratings  LIMIT 5;"):
 #     print row
 # print 'INFO:: finished printing 5 rows'
-
-# for row in reader:
-#     to_db = [unicode(row[0], 'utf8'), unicode(row[1], 'utf8'), unicode(row[2], 'utf8')]
-#     curs.execute("INSERT INTO t (col1, col2) VALUES (?, ?);", to_db)
-# conn.commit()
 
 
 # # - Gender is denoted by a "M" for male and "F" for female
@@ -102,6 +95,29 @@ print 'INFO:: finished printing 5 rows'
 ##############################################################################################
 ## APPENDIX
 ##############################################################################################
+
+# dic1 = {'ratings': {'Timestamp': 3, 'MovieID': 1}}
+# create_db(dic1, conn, curs)
+
+# f = open('data/ml-1m/ratings.dat', "r")
+# lines = f.readlines()
+# f.close
+# for i in lines:
+#     values = i.split("::")
+
+# for i in tables_dic:
+#     create_db(i, tables_dic[i], conn, curs)
+# create_db('movies', 'MovieID, Title, Genres', conn, curs)
+# print 'INFO:: finished creating database for'+i
+# for row in curs.execute("SELECT * FROM "+i+"  LIMIT 5;"):
+#     print row
+# print 'INFO:: finished printing 5 rows'
+
+# for row in reader:
+#     to_db = [unicode(row[0], 'utf8'), unicode(row[1], 'utf8'), unicode(row[2], 'utf8')]
+#     curs.execute("INSERT INTO t (col1, col2) VALUES (?, ?);", to_db)
+# conn.commit()
+
 
 # def create_db(table_name, conn, curs):
 #     # Open file and set csv reader
