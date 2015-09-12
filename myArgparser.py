@@ -9,12 +9,12 @@ import argparse
 ##### Functions needed to check right format of arguments in command line
 def valid_grouping(s):
     try:
-        if s == 'age' or s == 'gender':
+        if s == 'agegroup' or s == 'gender':
             return s
         else:
             raise ValueError
     except ValueError:
-        msg = "Not a valid grouping. Should be 'age' or 'gender'."
+        msg = "Not a valid grouping. Should be 'agegroup' or 'gender'."
         raise argparse.ArgumentTypeError(msg)
 
 def valid_int(N):
