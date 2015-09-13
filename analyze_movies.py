@@ -103,4 +103,5 @@ elif grouping == 'agegroup':
         build_query("users.Age", "'" + str(i) + "'", N)
 
 # Close connection
+conn.commit()
 conn.close()
